@@ -80,7 +80,7 @@ All feed content is © its respective publisher; ByteFeed only aggregates and li
 
 ## Project layout
 
-```
+```text
 bytefeed/
 ├── app.py        Textual application — layout, widgets, keybindings
 ├── RSS.py        Async feed fetcher (httpx + feedparser)
