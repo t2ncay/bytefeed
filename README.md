@@ -17,7 +17,7 @@
 Clone the repository and install locally in editable mode:
 
 ```bash
-git clone [https://github.com/yourusername/bytefeed.git](https://github.com/yourusername/bytefeed.git)
+git clone https://github.com/t2ncay/bytefeed.git
 cd bytefeed
 pip install -e .
 ```
