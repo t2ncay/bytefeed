@@ -30,7 +30,7 @@ class RSSWorker:
                 timeout=self.timeout,
                 follow_redirects=True,
                 headers=self.headers,
-                verify=False
+                verify=True
             )
         return self._client
 

@@ -15,11 +15,13 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         ],
         "AI & Dev": [
             {"name": "Lobsters", "url": "https://lobste.rs/rss"},
-            {"name": "GitHub Blog", "url": "https://github.blog/feed/"}
+            {"name": "GitHub Blog", "url": "https://github.blog/feed/"},
+            {"name": "DEV Community", "url": "https://dev.to/feed"}
         ],
         "Security": [
             {"name": "BleepingComputer", "url": "https://www.bleepingcomputer.com/feed/"},
-            {"name": "The Hacker News", "url": "https://feeds.feedburner.com/TheHackersNews"}
+            {"name": "The Hacker News", "url": "https://feeds.feedburner.com/TheHackersNews"},
+            {"name": "Krebs on Security", "url": "https://krebsonsecurity.com/feed/"}
         ]
     }
 }

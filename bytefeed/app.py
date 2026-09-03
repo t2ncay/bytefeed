@@ -6,7 +6,6 @@ from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.widgets import Header, Footer, ListItem, ListView, Static, Markdown, Input, TabbedContent, TabPane
 from textual.binding import Binding
-from textual import work
 
 from bytefeed.config import load_or_create_config, CONFIG_FILE
 from bytefeed.RSS import RSSWorker, FeedArticle
@@ -39,19 +38,30 @@ class ByteFeedApp(App):
 
     CSS = """
     Screen {
-        layout: grid;
-        grid-size: 2 1;
-        grid-columns: 1fr 2fr;
         background: $surface;
     }
 
     #sidebar {
+        width: 1fr;
         border-right: heavy $primary;
         height: 100%;
         padding: 0 1;
     }
 
+    #category-tabs {
+        height: 1fr;
+    }
+
+    #category-tabs ContentSwitcher {
+        height: 1fr;
+    }
+
+    #category-tabs TabPane {
+        height: 100%;
+    }
+
     #main-content {
+        width: 2fr;
         height: 100%;
         padding: 1 2;
     }
@@ -116,7 +126,6 @@ class ByteFeedApp(App):
                     for cat in self.config.get("categories", {}).keys():
                         clean_id = slugify(cat)
                         with TabPane(cat, id=f"tab-{clean_id}"):
-                            # Just yield the ListView without adding items
                             yield ListView(id=f"list-{clean_id}")
 
             with VerticalScroll(id="main-content"):
@@ -132,16 +141,11 @@ class ByteFeedApp(App):
 
         yield Footer()
 
-    def on_mount(self) -> None:
+    async def on_mount(self) -> None:
         """App initialization."""
         interval = self.config.get("refresh_interval_seconds", 60)
-        self.set_interval(interval, self.trigger_refresh)
-        # Start the initial fetch
-        self.run_worker(self.fetch_all_feeds())
-
-    def trigger_refresh(self) -> None:
-        """Trigger a refresh of all feeds."""
-        self.run_worker(self.fetch_all_feeds())
+        self.set_interval(interval, self.fetch_all_feeds)
+        await self.fetch_all_feeds()
 
     async def fetch_all_feeds(self) -> None:
         """Fetch all feeds and update the UI."""
@@ -180,23 +184,20 @@ class ByteFeedApp(App):
                     print(f"Could not find list view for {clean_id}: {e}")
                     continue
                 
-                # Clear existing items
-                list_view.clear()
+                # Clear existing items - IMPORTANT: use await!
+                await list_view.clear()
                 
-                # Add new items
+                # Add new items - IMPORTANT: use await!
                 if articles:
                     for article in articles:
-                        list_view.append(NewsItem(article))
+                        await list_view.append(NewsItem(article))
                     print(f"✅ Loaded {len(articles)} articles for {cat_name}")
                 else:
                     # Add a placeholder if no articles
-                    list_view.append(
+                    await list_view.append(
                         ListItem(Static("[dim]No articles found[/dim]"))
                     )
                     print(f"⚠️ No articles found for {cat_name}")
-
-                # Force a refresh of the widget
-                list_view.refresh()
 
             except Exception as err:
                 print(f"❌ Error fetching {cat_name}: {err}")
@@ -204,11 +205,10 @@ class ByteFeedApp(App):
                 # Add error message to the list
                 try:
                     list_view = self.query_one(f"#list-{clean_id}", ListView)
-                    list_view.clear()
-                    list_view.append(
+                    await list_view.clear()
+                    await list_view.append(
                         ListItem(Static(f"[red]Error loading feeds[/red]"))
                     )
-                    list_view.refresh()
                 except:
                     pass
 
@@ -254,9 +254,9 @@ class ByteFeedApp(App):
         """Focus the search box."""
         self.query_one("#search-box", Input).focus()
 
-    def action_refresh_feed(self) -> None:
+    async def action_refresh_feed(self) -> None:
         """Manually refresh the feeds."""
-        self.trigger_refresh()
+        await self.fetch_all_feeds()
 
     def action_open_in_browser(self) -> None:
         """Open the selected article in a browser."""
