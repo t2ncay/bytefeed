@@ -25,8 +25,9 @@ class NewsItem(ListItem):
 
     def compose(self) -> ComposeResult:
         yield Static(
-            f"[bold cyan][{self.article.source}][/bold cyan] {self.article.title}\n"
-            f"[dim]{self.article.published}[/dim]"
+            f"[bold]{self.article.title}[/bold]\n"
+            f"[cyan]{self.article.source}[/cyan]  [dim]•  {self.article.published}[/dim]",
+            classes="news-item-body",
         )
 
 
@@ -41,34 +42,14 @@ class ByteFeedApp(App):
         background: $surface;
     }
 
-    #sidebar {
-        width: 1fr;
-        border-right: heavy $primary;
-        height: 100%;
-        padding: 0 1;
+    Header {
+        background: $panel;
+        color: $text;
+        text-style: bold;
     }
 
-    #category-tabs {
-        height: 1fr;
-    }
-
-    #category-tabs ContentSwitcher {
-        height: 1fr;
-    }
-
-    #category-tabs TabPane {
-        height: 100%;
-    }
-
-    #main-content {
-        width: 2fr;
-        height: 100%;
-        padding: 1 2;
-    }
-
-    #search-box {
-        margin-bottom: 1;
-        border: round $secondary;
+    Footer {
+        background: $panel;
     }
 
     #status-bar {
@@ -77,35 +58,115 @@ class ByteFeedApp(App):
         background: $accent;
         color: $text;
         text-style: bold;
-        padding: 0 1;
+        padding: 0 2;
+        content-align: left middle;
+    }
+
+    #sidebar {
+        width: 1fr;
+        min-width: 34;
+        height: 100%;
+        padding: 1 2 0 2;
+        background: $panel;
+        border-right: heavy $primary;
+    }
+
+    #search-box {
+        margin-bottom: 1;
+        border: round $secondary;
+        background: $surface-darken-1;
+        color: $text;
+    }
+
+    #search-box:focus {
+        border: round $accent;
+    }
+
+    #category-tabs {
+        height: 1fr;
+    }
+
+    #category-tabs Tabs {
+        background: $panel;
+    }
+
+    #category-tabs Tab {
+        text-style: bold;
+        padding: 0 2;
+    }
+
+    #category-tabs Tab.-active {
+        color: $accent;
+        text-style: bold underline;
+    }
+
+    #category-tabs ContentSwitcher {
+        height: 1fr;
+    }
+
+    #category-tabs TabPane {
+        height: 100%;
+        padding: 1 0 0 0;
     }
 
     ListView {
         height: 100%;
         border: round $primary;
         background: $surface-darken-1;
+        scrollbar-size: 1 1;
+        scrollbar-color: $accent;
+        scrollbar-background: $surface-darken-2;
     }
 
     ListItem {
-        padding: 1 1;
+        padding: 1 2;
         height: auto;
+        background: $surface-darken-1;
         border-bottom: solid $surface-lighten-1;
     }
 
-    ListItem > Static {
+    ListItem > .news-item-body {
         width: 100%;
+        height: auto;
     }
 
     ListItem:hover {
-        background: $accent-darken-2;
+        background: $accent-darken-3;
     }
 
     ListView > ListItem.--highlight {
         background: $accent-darken-1;
+        border-left: thick $accent;
+    }
+
+    ListView:focus > ListItem.--highlight {
+        background: $accent;
+        border-left: thick $warning;
+    }
+
+    #main-content {
+        width: 2fr;
+        height: 100%;
+        padding: 1 3;
+        background: $surface;
     }
 
     #article-view {
         height: 100%;
+    }
+
+    #article-view MarkdownH1 {
+        color: $accent;
+        text-style: bold;
+        border-bottom: heavy $primary;
+        padding-bottom: 1;
+        margin-bottom: 1;
+    }
+
+    #article-view MarkdownBlockQuote {
+        border-left: thick $secondary;
+        padding-left: 2;
+        color: $text-muted;
     }
     """
 
@@ -162,15 +223,15 @@ class ByteFeedApp(App):
         status.update("🔄 Syncing RSS streams...")
 
         categories = self.config.get("categories", {})
-        
+
         if not categories:
             status.update("⚠️ No categories configured")
             return
-        
+
         # Process each category
         for cat_name, feeds in categories.items():
             clean_id = slugify(cat_name)
-            
+
             try:
                 # Fetch all feeds concurrently inside the category
                 tasks = [
@@ -192,10 +253,10 @@ class ByteFeedApp(App):
                 except Exception as e:
                     print(f"Could not find list view for {clean_id}: {e}")
                     continue
-                
+
                 # Clear existing items - IMPORTANT: use await!
                 await list_view.clear()
-                
+
                 # Add new items - IMPORTANT: use await!
                 if articles:
                     for article in articles:
