@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Dict, Any
 
-CONFIG_DIR = Path.home() / ".config" / "bytefeed"
+CONFIG_DIR  = Path.home() / ".config" / "bytefeed"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 
 DEFAULT_CONFIG: Dict[str, Any] = {
