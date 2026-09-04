@@ -87,12 +87,21 @@ class ByteFeedApp(App):
     }
 
     ListItem {
-        padding: 1;
+        padding: 1 1;
+        height: auto;
         border-bottom: solid $surface-lighten-1;
+    }
+
+    ListItem > Static {
+        width: 100%;
     }
 
     ListItem:hover {
         background: $accent-darken-2;
+    }
+
+    ListView > ListItem.--highlight {
+        background: $accent-darken-1;
     }
 
     #article-view {
